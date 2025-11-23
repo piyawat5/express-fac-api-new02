@@ -14,7 +14,7 @@ async function scanReceiptApi(imageBuffer, originalFilename) {
 
   const headers = {
     ...form.getHeaders(),
-    Apikey: API_KEY,
+    Apikey: process.env.CLOUDMERSIVE_API_KEY,
   };
 
   const url = "https://api.cloudmersive.com/receipts/scan/receipt/scan";
