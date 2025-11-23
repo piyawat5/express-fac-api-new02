@@ -1,0 +1,137 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+    shadowDatabaseUrl = env("SHADOW_DATABASE_URL") 
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  firstName     String?
+  lastName      String?
+  avatar        String?
+  password  String?
+  role      UserRole @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  status    Boolean @default(true)
+
+  transactionsOwned Transaction[] @relation("UserOwnedTransactions")
+  transactionsApproved Transaction[] @relation("UserApprovedTransactions")
+  // TODO:
+  // invalidEndDate
+  // invalidAmount
+}
+
+model Config {
+  id        String   @id @default(uuid())
+  configType   ConfigType? @relation(fields: [configTypeId], references: [id], onDelete: Cascade)
+  configTypeId   String?
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  transactions Transaction[]
+}
+
+model ConfigType {
+  id        String   @id @default(uuid())
+  name      String   @default("ทั่วไป")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  configs   Config[]
+}
+
+model NetAmount {
+  id        String   @id @default(uuid())
+  amount    Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  historyNetAmounts HistoryNetAmount[]
+}
+
+model HistoryNetAmount {
+  id        String   @id @default(uuid())
+  netAmountId String
+  amount    Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  netAmount NetAmount @relation(fields: [netAmountId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+}
+model Transaction {
+  id        String   @id @default(uuid())
+  title     String?
+  amount    Float
+  description String?
+  configId  String?
+  ownerId   String
+  approveId  String?
+  statusApproveId Int?
+  historyNetAmountId String?
+
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  approveDate DateTime?
+
+  owner     User     @relation("UserOwnedTransactions", fields: [ownerId], references: [id], onDelete: Cascade)
+  approver   User?    @relation("UserApprovedTransactions", fields: [approveId], references: [id], onDelete: Cascade)
+  statusApprove StatusApprove? @relation(fields: [statusApproveId], references: [id], onDelete: Cascade)
+  historyNetAmount HistoryNetAmount? @relation(fields: [historyNetAmountId], references: [id], onDelete: Cascade)
+  config    Config?   @relation(fields: [configId], references: [id], onDelete: Cascade)
+  items     TransactionItem[]
+  files     TransactionFile[]
+}
+
+
+model TransactionItem {
+  id        String   @id @default(uuid())
+  transactionId String
+  description String
+  amount    Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+}
+
+model TransactionFile {
+  id        String   @id @default(uuid())
+  transactionId String
+  fileUrl   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+}
+
+model StatusApprove {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions Transaction[]
+}
+
+// model History {
+//   id        String   @id @default(uuid())
+//   createdAt DateTime @default(now())
+// }
+
+enum UserRole {
+  USER
+  ADMIN
+}
