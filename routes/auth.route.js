@@ -11,6 +11,15 @@ import {
   getConfigTypes,
   updateConfig,
 } from "../controllers/config.controller.js";
+import {
+  getAllHistoryNetAmount,
+  createTransaction,
+  updateTransaction,
+  deleteTransaction,
+  getTransactionById,
+  getAllTransactions,
+  approveTransaction,
+} from "../controllers/finance.controller.js";
 
 import { login, authen } from "../controllers/authCookie.controller.js";
 import {
@@ -41,6 +50,8 @@ const router = express.Router();
 
 // ------------- auth --------------
 router.post("/auth/register", validate(registerSchema), register);
+router.post("/auth/login", login);
+router.post("/auth/verify", authen);
 
 // ------------- upload --------------
 router.post("/single", upload.single("image"), uploadImage);
@@ -55,10 +66,13 @@ router.get("/config/:id", verifyToken, getConfigById); //
 router.get("/config", verifyToken, getConfigs); //
 router.post("/config/type/create", verifyToken, createConfigsType); //
 
-router.post("/auth/login", login);
-router.post("/auth/verify", authen);
-
-// router.post("/upload", upload.array("images", 10), uploadFile);
-// TODO: validate
+// ------------- transaction --------------
+router.post("/transaction/create", createTransaction);
+router.put("/transaction/edit/:id", updateTransaction);
+router.delete("/transaction/delete/:id", deleteTransaction);
+router.get("/transaction/:id", getTransactionById);
+router.get("/transaction", getAllTransactions);
+router.patch("/transaction/approve/:id", approveTransaction);
+router.get("/history", getAllHistoryNetAmount);
 
 export default router;
