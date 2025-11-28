@@ -19,6 +19,7 @@ import {
   getTransactionById,
   getAllTransactions,
   approveTransaction,
+  createStatusApproveId,
 } from "../controllers/finance.controller.js";
 
 import { login, authen } from "../controllers/authCookie.controller.js";
@@ -65,6 +66,7 @@ router.delete("/config/delete/:id", deleteConfig); //
 router.get("/config/:id", getConfigById); //
 router.get("/config", getConfigs); //
 router.post("/config/type/create", createConfigsType); //
+router.post("/transaction/statusApprove", createStatusApproveId); //
 
 // ------------- transaction --------------
 router.post("/transaction/create", createTransaction);
@@ -74,5 +76,6 @@ router.get("/transaction/:id", getTransactionById);
 router.get("/transaction", getAllTransactions);
 router.patch("/transaction/approve/:id", approveTransaction);
 router.get("/history", getAllHistoryNetAmount);
+router.post("/transaction/statusApprove", createStatusApproveId); //
 
 export default router;
