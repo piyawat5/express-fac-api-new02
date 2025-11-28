@@ -596,3 +596,49 @@ export const approveTransaction = async (req, res) => {
     });
   }
 };
+
+export const createStatusApproveId = async (req, res, next) => {
+  try {
+    const { name } = req.body;
+    const statusApprove = await prisma.statusApprove.create({
+      data: {
+        name,
+      },
+    });
+    res.status(201).json({
+      message: "สร้างสถานะการอนุมัติสำเร็จ",
+      statusApprove,
+    });
+  } catch (error) {
+    next(createError(500, error));
+  }
+};
+
+export const updateStatusWorkorderItem = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { statusApproveId, comment } = req.body;
+    // Check if workorder item exists
+    const existingTransaction = await prisma.transaction.findUnique({
+      where: { id },
+    });
+    if (!existingTransaction) {
+      return next(createError(404, "ไม่พบ workorder item"));
+    }
+    // Update workorder item status
+    const transaction = await prisma.transaction.update({
+      where: { id },
+      data: {
+        statusApproveId,
+        ...(comment ? { comment: comment } : {}),
+      },
+    });
+    return res.json({
+      success: true,
+      message: "อัพเดทสถานะ workorder item สำเร็จ",
+      data: transaction,
+    });
+  } catch (error) {
+    next(createError(500, error));
+  }
+};
