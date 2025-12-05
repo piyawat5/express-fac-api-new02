@@ -642,3 +642,68 @@ export const updateStatusWorkorderItem = async (req, res, next) => {
     next(createError(500, error));
   }
 };
+
+export const createNetAmount = async (req, res, next) => {
+  try {
+    const { amount } = req.body;
+    const netAmount = await prisma.netAmount.create({
+      data: {
+        amount,
+      },
+    });
+    res.status(201).json({
+      message: "สร้าง NetAmount สำเร็จ",
+      netAmount,
+    });
+  } catch (error) {
+    next(createError(500, error));
+  }
+};
+
+export const getAllNetAmounts = async (req, res, next) => {
+  try {
+    const netAmounts = await prisma.netAmount.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+    res.status(200).json({
+      message: "ดึง NetAmounts ทั้งหมดสำเร็จ",
+      netAmounts,
+    });
+  } catch (error) {
+    next(createError(500, error));
+  }
+};
+
+export const getNetAmountById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const netAmount = await prisma.netAmount.findFirst({
+      orderBy: { createdAt: "desc" },
+    });
+    res.status(200).json({
+      message: "ดึง NetAmount สำเร็จ",
+      netAmount,
+    });
+  } catch (error) {
+    next(createError(500, error));
+  }
+};
+
+export const updateNetAmount = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { amount } = req.body;
+    const netAmount = await prisma.netAmount.update({
+      where: { id },
+      data: {
+        amount,
+      },
+    });
+    res.status(200).json({
+      message: "อัพเดท NetAmount สำเร็จ",
+      netAmount,
+    });
+  } catch (error) {
+    next(createError(500, error));
+  }
+};

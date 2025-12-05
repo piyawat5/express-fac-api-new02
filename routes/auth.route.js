@@ -20,6 +20,10 @@ import {
   getAllTransactions,
   approveTransaction,
   createStatusApproveId,
+  createNetAmount,
+  updateNetAmount,
+  getAllNetAmounts,
+  getNetAmountById,
 } from "../controllers/finance.controller.js";
 
 import { login, authen } from "../controllers/authCookie.controller.js";
@@ -38,6 +42,7 @@ const upload = multer({
     fileSize: 5 * 1024 * 1024, // จำกัด 5MB
   },
   fileFilter: (req, file, cb) => {
+    console.log("01");
     // ยอมรับเฉพาะไฟล์รูปภาพ
     if (file.mimetype.startsWith("image/")) {
       cb(null, true);
@@ -77,5 +82,10 @@ router.get("/transaction", getAllTransactions);
 router.patch("/transaction/approve/:id", approveTransaction);
 router.get("/history", getAllHistoryNetAmount);
 router.post("/transaction/statusApprove", createStatusApproveId); //
+
+router.post("/netAmount/create", createNetAmount);
+router.put("/netAmount/update", updateNetAmount);
+router.get("/netAmount/:id", getNetAmountById);
+router.get("/netAmount", getAllNetAmounts);
 
 export default router;
