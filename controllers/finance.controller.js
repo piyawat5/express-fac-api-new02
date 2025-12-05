@@ -181,6 +181,10 @@ export const createTransaction = async (req, res) => {
       return newTransaction;
     });
 
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
     // ส่งไลน์
     let message = `🔔 เงินกองกลางถูกเพิ่ม\n`;
     message += `👤 โดยคุณ ${user.firstName} \n`;
