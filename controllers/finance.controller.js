@@ -545,15 +545,15 @@ export const getAllTransactions = async (req, res) => {
 export const approveTransaction = async (req, res) => {
   try {
     const { id } = req.params;
-    const { statusApproveId } = req.body;
-    const userId = req.user.id;
+    const { statusApproveId, userId } = req.body;
+    // const userId = req.user.id;
 
     // ตรวจสอบว่าเป็น admin หรือไม่
-    if (req.user.role !== "ADMIN") {
-      return res
-        .status(403)
-        .json({ message: "ไม่มีสิทธิ์ approve Transaction" });
-    }
+    // if (req.user.role !== "ADMIN") {
+    //   return res
+    //     .status(403)
+    //     .json({ message: "ไม่มีสิทธิ์ approve Transaction" });
+    // }
 
     const transaction = await prisma.transaction.update({
       where: { id },

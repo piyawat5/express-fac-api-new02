@@ -79,9 +79,9 @@ router.put("/transaction/edit/:id", updateTransaction);
 router.delete("/transaction/delete/:id", deleteTransaction);
 router.get("/transaction/:id", getTransactionById);
 router.get("/transaction", getAllTransactions);
-router.patch("/transaction/approve/:id", approveTransaction);
+
+router.put("/transaction/approve/:id", approveTransaction); //ใช้บนระบบ Approve เพื่อยิงมาที่ fac
 router.get("/history", getAllHistoryNetAmount);
-router.post("/transaction/statusApprove", createStatusApproveId); //
 
 router.post("/netAmount/create", createNetAmount);
 router.put("/netAmount/update", updateNetAmount);
