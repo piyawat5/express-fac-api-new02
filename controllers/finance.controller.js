@@ -85,6 +85,7 @@ export const getAllHistoryNetAmount = async (req, res) => {
 export const createTransaction = async (req, res) => {
   try {
     const {
+      userId,
       title,
       description,
       configId,
@@ -92,7 +93,7 @@ export const createTransaction = async (req, res) => {
       fileUrls, // [string] - URLs จาก Cloudinary ที่ upload แล้ว
     } = req.body;
 
-    const userId = req.user.id; // จาก auth middleware
+    // const userId = req.user.id; // จาก auth middleware
 
     // 1. Validate items และคำนวณ amount รวม
     if (!items || !Array.isArray(items) || items.length === 0) {
