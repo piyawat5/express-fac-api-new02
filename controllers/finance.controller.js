@@ -117,7 +117,7 @@ export const createTransaction = async (req, res) => {
     }
 
     // 3. คำนวณ NetAmount ใหม่
-    const newNetAmountValue = currentNetAmount.amount - totalAmount;
+    const newNetAmountValue = currentNetAmount.amount + totalAmount;
 
     // 4. สร้าง Transaction พร้อม items, files และ HistoryNetAmount ใน transaction เดียว
     const transaction = await prisma.$transaction(async (tx) => {
