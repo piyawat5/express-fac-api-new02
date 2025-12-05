@@ -1,6 +1,7 @@
 import prisma from "../config/prisma.js";
 import createError from "../utils/createError.js";
 import { sendLineMessage } from "../utils/lineNotify.js";
+import axios from "axios";
 
 // ดึง HistoryNetAmount ทั้งหมด พร้อม pagination และ filter
 export const getAllHistoryNetAmount = async (req, res) => {
@@ -82,6 +83,7 @@ export const getAllHistoryNetAmount = async (req, res) => {
   }
 };
 
+// เพิ่มเงินกองกลาง
 export const createTransaction = async (req, res) => {
   try {
     const {
@@ -143,6 +145,7 @@ export const createTransaction = async (req, res) => {
           description,
           configId,
           ownerId: userId,
+          statusApproveId: 2,
           historyNetAmountId: historyNetAmount.id,
           items: {
             create: items.map((item) => ({
@@ -177,6 +180,150 @@ export const createTransaction = async (req, res) => {
 
       return newTransaction;
     });
+
+    // ส่งไลน์
+    let message = `🔔 เงินกองกลางถูกเพิ่ม\n`;
+    message += `👤 โดยคุณ ${user.firstName} \n`;
+    message += `ทั้งสิ้น: ${totalAmount} บาท\n`;
+    message += `ยอดสุทธิเงินกองกลางทั้งสิ้น: ${newNetAmountValue} บาทค่ะ`;
+
+    await sendLineMessage(message);
+
+    res.status(201).json({
+      message: "สร้าง Transaction สำเร็จ",
+      data: transaction,
+    });
+  } catch (error) {
+    console.error("Create transaction error:", error);
+    res.status(500).json({
+      message: "เกิดข้อผิดพลาดในการสร้าง Transaction",
+      error: error.message,
+    });
+  }
+};
+
+// เบิกเงินกองกลาง
+export const withDraw = async (req, res) => {
+  try {
+    const {
+      userId,
+      title,
+      description,
+      configId,
+      items, // [{ description: string, amount: number }]
+      fileUrls, // [string] - URLs จาก Cloudinary ที่ upload แล้ว
+    } = req.body;
+
+    // const userId = req.user.id; // จาก auth middleware
+
+    // 1. Validate items และคำนวณ amount รวม
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: "ต้องมีอย่างน้อย 1 item" });
+    }
+
+    const totalAmount = items.reduce((sum, item) => {
+      if (!item.amount || typeof item.amount !== "number") {
+        throw new Error("amount ของแต่ละ item ต้องเป็นตัวเลข");
+      }
+      return sum + item.amount;
+    }, 0);
+
+    // 2. ดึง NetAmount ล่าสุด
+    const currentNetAmount = await prisma.netAmount.findFirst({
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (!currentNetAmount) {
+      return res.status(500).json({ message: "ไม่พบข้อมูล NetAmount ในระบบ" });
+    }
+
+    // 3. คำนวณ NetAmount ใหม่
+    const newNetAmountValue = currentNetAmount.amount - totalAmount;
+
+    // 4. สร้าง Transaction พร้อม items, files และ HistoryNetAmount ใน transaction เดียว
+    const transaction = await prisma.$transaction(async (tx) => {
+      // สร้าง HistoryNetAmount
+      const historyNetAmount = await tx.historyNetAmount.create({
+        data: {
+          netAmountId: currentNetAmount.id,
+          amount: newNetAmountValue,
+        },
+      });
+
+      // อัพเดท NetAmount
+      await tx.netAmount.update({
+        where: { id: currentNetAmount.id },
+        data: { amount: newNetAmountValue },
+      });
+
+      // สร้าง Transaction
+      const newTransaction = await tx.transaction.create({
+        data: {
+          title,
+          amount: totalAmount,
+          description,
+          configId,
+          ownerId: userId,
+          statusApproveId: 1,
+          historyNetAmountId: historyNetAmount.id,
+          items: {
+            create: items.map((item) => ({
+              description: item.description,
+              amount: item.amount,
+            })),
+          },
+          files:
+            fileUrls && fileUrls.length > 0
+              ? {
+                  create: fileUrls.map((url) => ({
+                    fileUrl: url,
+                  })),
+                }
+              : undefined,
+        },
+        include: {
+          items: true,
+          files: true,
+          owner: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+          config: true,
+          historyNetAmount: true,
+        },
+      });
+
+      return newTransaction;
+    });
+
+    await axios.post(`https://api-app.family-sivarom.com/approve/create`, {
+      apiKey: process.env.API_KEY,
+      url: fileUrls ? fileUrls.join(",") : "",
+      title: title,
+      detail: description,
+      comment: "",
+      idFrom: transaction.id,
+      apiPath: `https://api-fac-new.family-sivarom.com/workorder/updateStatusWorkorderItem/`,
+      statusApproveId: 1,
+      configId: "6d881a00-dd75-4839-b636-ec65b22cc945",
+      userId: userId, //TODO เปลี่ยนจาก user ที่ส่งขอไปเป็น user ที่ต้องอนุมัติ
+    });
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    // ส่งไลน์
+    let message = `🔔 มีรายการยื่นขอเบิกเงินกองกลาง\n`;
+    message += `👤 โดยคุณ ${user.firstName} \n`;
+    message += `ทั้งสิ้น: ${totalAmount} บาท\n`;
+    message += `ผู้ที่ดูแลเงินกองกลาง กรุณาดำเนินการต่อบนระบบ Approve ด้วยค่ะ`;
+
+    await sendLineMessage(message);
 
     res.status(201).json({
       message: "สร้าง Transaction สำเร็จ",
