@@ -17,6 +17,7 @@ const corsOptions = {
     "http://localhost:5173",
     "https://ma.family-sivarom.com",
     "https://app.family-sivarom.com",
+    "https://fac.family-sivarom.com",
   ],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
