@@ -24,6 +24,7 @@ import {
   updateNetAmount,
   getAllNetAmounts,
   getNetAmountById,
+  withDraw,
 } from "../controllers/finance.controller.js";
 
 import { login, authen } from "../controllers/authCookie.controller.js";
@@ -81,6 +82,7 @@ router.get("/transaction/:id", getTransactionById);
 router.get("/transaction", getAllTransactions);
 
 router.put("/transaction/approve/:id", approveTransaction); //ใช้บนระบบ Approve เพื่อยิงมาที่ fac
+router.post("/transaction/withdraw", withDraw); //ใช้บน fac เพื่อส่งรายการไปยัง Approve
 router.get("/history", getAllHistoryNetAmount);
 
 router.post("/netAmount/create", createNetAmount);
