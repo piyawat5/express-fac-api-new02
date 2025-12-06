@@ -210,7 +210,8 @@ export const createTransaction = async (req, res) => {
 export const withDraw = async (req, res) => {
   try {
     const {
-      userId,
+      ownerId,
+      approveId,
       title,
       description,
       configId,
@@ -242,12 +243,13 @@ export const withDraw = async (req, res) => {
     }
 
     // 3. คำนวณ NetAmount ใหม่
-    const newNetAmountValue = currentNetAmount.amount - totalAmount;
+    const newNetAmountValue = currentNetAmount.amount;
 
     // 4. สร้าง Transaction พร้อม items, files และ HistoryNetAmount ใน transaction เดียว
     const transaction = await prisma.$transaction(async (tx) => {
       // สร้าง HistoryNetAmount
       const historyNetAmount = await tx.historyNetAmount.create({
+        // TODO: ถ้ามีการกดดู history กรณีที่ transaction นั้นยังไม่ถูกอนุมัติ ให้ดูที่ include statusApproveId
         data: {
           netAmountId: currentNetAmount.id,
           amount: newNetAmountValue,
@@ -255,10 +257,10 @@ export const withDraw = async (req, res) => {
       });
 
       // อัพเดท NetAmount
-      await tx.netAmount.update({
-        where: { id: currentNetAmount.id },
-        data: { amount: newNetAmountValue },
-      });
+      // await tx.netAmount.update({
+      //   where: { id: currentNetAmount.id },
+      //   data: { amount: newNetAmountValue },
+      // });
 
       // สร้าง Transaction
       const newTransaction = await tx.transaction.create({
@@ -267,7 +269,8 @@ export const withDraw = async (req, res) => {
           amount: totalAmount,
           description,
           configId,
-          ownerId: userId,
+          ownerId,
+          approveId,
           statusApproveId: 1,
           historyNetAmountId: historyNetAmount.id,
           items: {
@@ -294,6 +297,16 @@ export const withDraw = async (req, res) => {
               email: true,
               firstName: true,
               lastName: true,
+              avatar: true,
+            },
+          },
+          approver: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              avatar: true,
             },
           },
           config: true,
@@ -314,18 +327,23 @@ export const withDraw = async (req, res) => {
       apiPath: `https://api-fac-new.family-sivarom.com/workorder/updateStatusWorkorderItem/`,
       statusApproveId: 1,
       configId: "6d881a00-dd75-4839-b636-ec65b22cc945",
-      userId: userId, //TODO เปลี่ยนจาก user ที่ส่งขอไปเป็น user ที่ต้องอนุมัติ
+      approveId,
+      ownerId,
     });
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
+    const approver = await prisma.user.findUnique({
+      where: { id: approveId },
+    });
+
+    const owner = await prisma.user.findUnique({
+      where: { id: approveId },
     });
 
     // ส่งไลน์
     let message = `🔔 มีรายการยื่นขอเบิกเงินกองกลาง\n`;
-    message += `👤 โดยคุณ ${user.firstName} \n`;
+    message += `👤 โดยคุณ ${owner.firstName} \n`;
     message += `ทั้งสิ้น: ${totalAmount} บาท\n`;
-    message += `ผู้ที่ดูแลเงินกองกลาง กรุณาดำเนินการต่อบนระบบ Approve ด้วยค่ะ`;
+    message += `คุณ ${approver.firstName} กรุณาดำเนินการต่อบนระบบ Approve ด้วยค่ะ`;
 
     await sendLineMessage(message);
 
@@ -355,7 +373,7 @@ export const updateTransaction = async (req, res) => {
       statusApproveId,
     } = req.body;
 
-    const userId = req.user.id;
+    // const userId = req.user.id;
 
     // ตรวจสอบว่า Transaction มีอยู่จริง
     const existingTransaction = await prisma.transaction.findUnique({
@@ -368,11 +386,11 @@ export const updateTransaction = async (req, res) => {
     }
 
     // ตรวจสอบสิทธิ์ (เฉพาะเจ้าของหรือ admin เท่านั้น)
-    if (existingTransaction.ownerId !== userId && req.user.role !== "ADMIN") {
-      return res
-        .status(403)
-        .json({ message: "ไม่มีสิทธิ์แก้ไข Transaction นี้" });
-    }
+    // if (existingTransaction.ownerId !== userId && req.user.role !== "ADMIN") {
+    //   return res
+    //     .status(403)
+    //     .json({ message: "ไม่มีสิทธิ์แก้ไข Transaction นี้" });
+    // }
 
     // คำนวณ amount ใหม่
     let newTotalAmount = existingTransaction.amount;
@@ -461,6 +479,14 @@ export const updateTransaction = async (req, res) => {
               lastName: true,
             },
           },
+          approver: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
           config: true,
           historyNetAmount: true,
         },
@@ -486,7 +512,7 @@ export const updateTransaction = async (req, res) => {
 export const deleteTransaction = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user.id;
+    // const userId = req.user.id;
 
     const transaction = await prisma.transaction.findUnique({
       where: { id },
@@ -497,9 +523,9 @@ export const deleteTransaction = async (req, res) => {
     }
 
     // ตรวจสอบสิทธิ์
-    if (transaction.ownerId !== userId && req.user.role !== "ADMIN") {
-      return res.status(403).json({ message: "ไม่มีสิทธิ์ลบ Transaction นี้" });
-    }
+    // if (transaction.ownerId !== userId && req.user.role !== "ADMIN") {
+    //   return res.status(403).json({ message: "ไม่มีสิทธิ์ลบ Transaction นี้" });
+    // }
 
     // ดึง NetAmount ล่าสุด
     const currentNetAmount = await prisma.netAmount.findFirst({
@@ -696,7 +722,7 @@ export const getAllTransactions = async (req, res) => {
 export const approveTransaction = async (req, res) => {
   try {
     const { id } = req.params;
-    const { statusApproveId, userId } = req.body;
+    const { statusApproveId } = req.body;
     // const userId = req.user.id;
 
     // ตรวจสอบว่าเป็น admin หรือไม่
@@ -710,7 +736,6 @@ export const approveTransaction = async (req, res) => {
       where: { id },
       data: {
         statusApproveId,
-        approveId: userId,
         approveDate: new Date(),
       },
       include: {
@@ -735,6 +760,29 @@ export const approveTransaction = async (req, res) => {
         statusApprove: true,
       },
     });
+
+    if (statusApproveId == 2) {
+      //TODO: หักเงินกองกลาง
+
+      // 2. ดึง NetAmount ล่าสุด
+      const currentNetAmount = await prisma.netAmount.findFirst({
+        orderBy: { createdAt: "desc" },
+      });
+      const newNetAmountValue = currentNetAmount.amount - transaction.amount;
+
+      if (!currentNetAmount) {
+        return res
+          .status(500)
+          .json({ message: "ไม่พบข้อมูล NetAmount ในระบบ" });
+      }
+
+      // 3. คำนวณ NetAmount ใหม่
+
+      const res = await prisma.netAmount.update({
+        where: { id: currentNetAmount.id },
+        data: { amount: newNetAmountValue },
+      });
+    }
 
     res.json({
       message: "Approve Transaction สำเร็จ",
