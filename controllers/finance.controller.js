@@ -336,7 +336,7 @@ export const withDraw = async (req, res) => {
     });
 
     const owner = await prisma.user.findUnique({
-      where: { id: approveId },
+      where: { id: ownerId },
     });
 
     // ส่งไลน์
