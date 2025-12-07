@@ -28,9 +28,7 @@ model User {
 
   transactionsOwned Transaction[] @relation("UserOwnedTransactions")
   transactionsApproved Transaction[] @relation("UserApprovedTransactions")
-  // TODO:
-  // invalidEndDate
-  // invalidAmount
+
 }
 
 model Config {

@@ -324,9 +324,9 @@ export const withDraw = async (req, res) => {
       detail: description,
       comment: "",
       idFrom: transaction.id,
-      apiPath: `https://api-fac-new.family-sivarom.com/workorder/updateStatusWorkorderItem/`,
+      apiPath: `https://api-fac-new.family-sivarom.com/transaction/approve/`,
       statusApproveId: 1,
-      configId: "6d881a00-dd75-4839-b636-ec65b22cc945",
+      configId: "6efb5d48-13c5-43cc-8ad0-64867f7c512c", //id ระบบ
       approveId,
       ownerId,
     });
@@ -722,7 +722,8 @@ export const getAllTransactions = async (req, res) => {
 export const approveTransaction = async (req, res) => {
   try {
     const { id } = req.params;
-    const { statusApproveId } = req.body;
+    //TODO: เพิ่มฟิลด์ comment ด้วย
+    const { statusApproveId, comment } = req.body;
     // const userId = req.user.id;
 
     // ตรวจสอบว่าเป็น admin หรือไม่
@@ -762,8 +763,6 @@ export const approveTransaction = async (req, res) => {
     });
 
     if (statusApproveId == 2) {
-      //TODO: หักเงินกองกลาง
-
       // 2. ดึง NetAmount ล่าสุด
       const currentNetAmount = await prisma.netAmount.findFirst({
         orderBy: { createdAt: "desc" },
