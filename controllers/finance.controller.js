@@ -782,6 +782,19 @@ export const approveTransaction = async (req, res) => {
         where: { id: currentNetAmount.id },
         data: { amount: newNetAmountValue },
       });
+
+      let message = `🔔 รายการยื่นขอเบิกเงินกองกลางได้รับการอนุมัติแล้ว\n\n`;
+      message += `จำนวนทั้งสิ้น ${transaction.amount} บาท\n`;
+      message += `ผู้ขอเบิก ${transaction.owner.firstName}\n\n`;
+      message += `ยอดสุทธิเงินกองกลางทั้งสิ้น ${newNetAmountValue} บาทค่ะ`;
+
+      await sendLineMessage(message);
+    }
+
+    if (statusApproveId == 3) {
+      let message = `🔔 รายการยื่นขอเบิกเงินกองกลางไม่ได้รับการอนุมัติ\n`;
+
+      await sendLineMessage(message);
     }
 
     res.json({
