@@ -98,6 +98,10 @@ export const createTransaction = async (req, res) => {
     // const userId = req.user.id; // จาก auth middleware
 
     // 1. Validate items และคำนวณ amount รวม
+    if (!configId) {
+      return res.status(400).json({ message: "กรุณาเลือกข้อกำหนดร่วมกัน" });
+    }
+
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ message: "ต้องมีอย่างน้อย 1 item" });
     }
