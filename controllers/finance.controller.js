@@ -191,7 +191,7 @@ export const createTransaction = async (req, res) => {
     message += `ทั้งสิ้น: ${totalAmount} บาท\n`;
     message += `ยอดสุทธิเงินกองกลางทั้งสิ้น: ${newNetAmountValue} บาทค่ะ`;
 
-    await sendLineMessage(message);
+    // await sendLineMessage(message);
 
     res.status(201).json({
       message: "สร้าง Transaction สำเร็จ",
@@ -345,7 +345,7 @@ export const withDraw = async (req, res) => {
     message += `ทั้งสิ้น: ${totalAmount} บาท\n`;
     message += `คุณ ${approver.firstName} กรุณาดำเนินการต่อบนระบบ Approve ด้วยค่ะ`;
 
-    await sendLineMessage(message);
+    // await sendLineMessage(message);
 
     res.status(201).json({
       message: "สร้าง Transaction สำเร็จ",
@@ -787,7 +787,7 @@ export const approveTransaction = async (req, res) => {
       message += `ผู้ขอเบิก ${transaction.owner.firstName}\n\n`;
       message += `ยอดสุทธิเงินกองกลางทั้งสิ้น ${newNetAmountValue} บาทค่ะ`;
 
-      await sendLineMessage(message);
+      // await sendLineMessage(message);
     }
 
     if (statusApproveId == 3) {
