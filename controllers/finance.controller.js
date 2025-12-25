@@ -190,7 +190,7 @@ export const createTransaction = async (req, res) => {
     message += `👤 โดยคุณ ${user.firstName} \n`;
     message += `ทั้งสิ้น: ${totalAmount} บาท\n`;
     message += `ยอดสุทธิเงินกองกลางทั้งสิ้น: ${newNetAmountValue} บาทค่ะ`;
-
+    // TODO
     // await sendLineMessage(message);
 
     res.status(201).json({
@@ -317,19 +317,20 @@ export const withDraw = async (req, res) => {
       return newTransaction;
     });
 
-    await axios.post(`https://api-app.family-sivarom.com/approve/create`, {
-      apiKey: process.env.API_KEY,
-      url: fileUrls ? fileUrls.join(",") : "",
-      title: title,
-      detail: description,
-      comment: "",
-      idFrom: transaction.id,
-      apiPath: `https://api-fac-new.family-sivarom.com/transaction/approve/`,
-      statusApproveId: 1,
-      configId: "6efb5d48-13c5-43cc-8ad0-64867f7c512c", //id ระบบ
-      approveId,
-      ownerId,
-    });
+    // TODO
+    // await axios.post(`https://api-app.family-sivarom.com/approve/create`, {
+    //   apiKey: process.env.API_KEY,
+    //   url: fileUrls ? fileUrls.join(",") : "",
+    //   title: title,
+    //   detail: description,
+    //   comment: "",
+    //   idFrom: transaction.id,
+    //   apiPath: `https://api-fac-new.family-sivarom.com/transaction/approve/`,
+    //   statusApproveId: 1,
+    //   configId: "6efb5d48-13c5-43cc-8ad0-64867f7c512c", //id ระบบ
+    //   approveId,
+    //   ownerId,
+    // });
 
     const approver = await prisma.user.findUnique({
       where: { id: approveId },
@@ -344,7 +345,7 @@ export const withDraw = async (req, res) => {
     message += `👤 โดยคุณ ${owner.firstName} \n`;
     message += `ทั้งสิ้น: ${totalAmount} บาท\n`;
     message += `คุณ ${approver.firstName} กรุณาดำเนินการต่อบนระบบ Approve ด้วยค่ะ`;
-
+    // TODO
     // await sendLineMessage(message);
 
     res.status(201).json({
@@ -786,7 +787,7 @@ export const approveTransaction = async (req, res) => {
       message += `จำนวนทั้งสิ้น ${transaction.amount} บาท\n`;
       message += `ผู้ขอเบิก ${transaction.owner.firstName}\n\n`;
       message += `ยอดสุทธิเงินกองกลางทั้งสิ้น ${newNetAmountValue} บาทค่ะ`;
-
+      // TODO
       // await sendLineMessage(message);
     }
 
