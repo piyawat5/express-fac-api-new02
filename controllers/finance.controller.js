@@ -317,20 +317,19 @@ export const withDraw = async (req, res) => {
       return newTransaction;
     });
 
-    // TODO
-    // await axios.post(`https://api-app.family-sivarom.com/approve/create`, {
-    //   apiKey: process.env.API_KEY,
-    //   url: fileUrls ? fileUrls.join(",") : "",
-    //   title: title,
-    //   detail: description,
-    //   comment: "",
-    //   idFrom: transaction.id,
-    //   apiPath: `https://api-fac-new.family-sivarom.com/transaction/approve/`,
-    //   statusApproveId: 1,
-    //   configId: "6efb5d48-13c5-43cc-8ad0-64867f7c512c", //id ระบบ
-    //   approveId,
-    //   ownerId,
-    // });
+    await axios.post(`https://api-app.family-sivarom.com/approve/create`, {
+      apiKey: process.env.API_KEY,
+      url: fileUrls ? fileUrls.join(",") : "",
+      title: title,
+      detail: description,
+      comment: "",
+      idFrom: transaction.id,
+      apiPath: `https://api-fac-new.family-sivarom.com/transaction/approve/`,
+      statusApproveId: 1,
+      configId: "6efb5d48-13c5-43cc-8ad0-64867f7c512c", //id ระบบ
+      approveId,
+      ownerId,
+    });
 
     const approver = await prisma.user.findUnique({
       where: { id: approveId },
