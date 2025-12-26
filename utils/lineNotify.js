@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export async function sendLineMessage(message) {
-  const accessToken = process.env.LINE_ACCESS_TOKEN;
+  const accessToken = process.env.LINE_ACCESS_TOKEN_ASSISTANT;
   const groupId = process.env.LINE_GROUP_ID;
 
   try {
