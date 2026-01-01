@@ -61,33 +61,38 @@ router.post("/auth/login", login);
 router.post("/auth/verify", authen);
 
 // ------------- upload --------------
-router.post("/single", upload.single("image"), uploadImage);
-router.post("/multiple", upload.array("images", 10), uploadMultipleImages);
+router.post("/single", verifyToken, upload.single("image"), uploadImage);
+router.post(
+  "/multiple",
+  verifyToken,
+  upload.array("images", 10),
+  uploadMultipleImages
+);
 
 // ------------- config --------------
-router.get("/config/type", getConfigTypes); //
-router.post("/config/create", createConfig); //
-router.put("/config/update/:id", updateConfig); //
-router.delete("/config/delete/:id", deleteConfig); //
-router.get("/config/:id", getConfigById); //
-router.get("/config", getConfigs); //
-router.post("/config/type/create", createConfigsType); //
+router.get("/config/type", verifyToken, getConfigTypes); //
+router.post("/config/create", verifyToken, createConfig); //
+router.put("/config/update/:id", verifyToken, updateConfig); //
+router.delete("/config/delete/:id", verifyToken, deleteConfig); //
+router.get("/config/:id", verifyToken, getConfigById); //
+router.get("/config", verifyToken, getConfigs); //
+router.post("/config/type/create", verifyToken, createConfigsType); //
 router.post("/transaction/statusApprove", createStatusApproveId); //
 
 // ------------- transaction --------------
-router.post("/transaction/create", createTransaction);
-router.put("/transaction/edit/:id", updateTransaction);
-router.delete("/transaction/delete/:id", deleteTransaction);
-router.get("/transaction/:id", getTransactionById);
-router.get("/transaction", getAllTransactions);
+router.post("/transaction/create", verifyToken, createTransaction);
+router.put("/transaction/edit/:id", verifyToken, updateTransaction);
+router.delete("/transaction/delete/:id", verifyToken, deleteTransaction);
+router.get("/transaction/:id", verifyToken, getTransactionById);
+router.get("/transaction", verifyToken, getAllTransactions);
 
 router.put("/transaction/approve/:id", approveTransaction); //ใช้บนระบบ Approve เพื่อยิงมาที่ fac
-router.post("/transaction/withdraw", withDraw); //ใช้บน fac เพื่อส่งรายการไปยัง Approve
-router.get("/history", getAllHistoryNetAmount);
+router.post("/transaction/withdraw", verifyToken, withDraw); //ใช้บน fac เพื่อส่งรายการไปยัง Approve
+router.get("/history", verifyToken, getAllHistoryNetAmount);
 
-router.post("/netAmount/create", createNetAmount);
-router.put("/netAmount/update", updateNetAmount);
-router.get("/netAmount/:id", getNetAmountById);
-router.get("/netAmount", getAllNetAmounts);
+router.post("/netAmount/create", verifyToken, createNetAmount);
+router.put("/netAmount/update", verifyToken, updateNetAmount);
+router.get("/netAmount/:id", verifyToken, getNetAmountById);
+router.get("/netAmount", verifyToken, getAllNetAmounts);
 
 export default router;
