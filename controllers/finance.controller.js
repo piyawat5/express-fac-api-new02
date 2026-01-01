@@ -345,6 +345,7 @@ export const withDraw = async (req, res) => {
     // ส่งไลน์
     let message = `🔔 มีรายการยื่นขอเบิกเงินกองกลาง\n`;
     message += `👤 โดยคุณ ${owner.firstName} \n`;
+    message += `รายละเอียด: ${description}`;
     message += `ทั้งสิ้น: ${totalAmount} บาท\n`;
     message += `คุณ ${approver.firstName} กรุณาดำเนินการต่อบนระบบ Approve ด้วยค่ะ`;
     await sendLineMessage(message);
